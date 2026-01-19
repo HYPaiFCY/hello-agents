@@ -7,6 +7,10 @@ import asyncio
 import os
 import random
 from typing import List, Dict, Optional
+from dotenv import load_dotenv  # 添加这一行
+
+# 加载 .env 文件
+load_dotenv()  # 添加这一行
 
 from agentscope.agent import ReActAgent
 from agentscope.model import DashScopeChatModel
