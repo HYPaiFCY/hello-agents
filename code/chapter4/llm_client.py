@@ -27,7 +27,7 @@ class HelloAgentsLLM:
 
     def think(self, messages: List[Dict[str, str]], temperature: float = 0) -> str:
         """
-        调用大语言模型进行思考，并返回其响应。
+        调用大语言模型进行思考,并返回其响应。
         """
         print(f"🧠 正在调用 {self.model} 模型...")
         try:
@@ -42,11 +42,17 @@ class HelloAgentsLLM:
             print("✅ 大语言模型响应成功:")
             collected_content = []
             for chunk in response:
-                content = chunk.choices[0].delta.content or ""
-                print(content, end="", flush=True)
-                collected_content.append(content)
+                # 检查 choices 是否存在且不为空
+                if chunk.choices and len(chunk.choices) > 0:
+                    content = chunk.choices[0].delta.content or ""
+                    print(content, end="", flush=True)
+                    collected_content.append(content)
             print()  # 在流式输出结束后换行
             return "".join(collected_content)
+
+            # 非流式输出
+            # return response.choices[0].message.content
+            
 
         except Exception as e:
             print(f"❌ 调用LLM API时发生错误: {e}")
