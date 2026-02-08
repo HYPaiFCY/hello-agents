@@ -32,7 +32,7 @@ To make our code more universal, we will uniformly configure model service-relat
 
 1. In your project root directory, create a file named `.env`.
 2. In this file, add the following content. You can point it to OpenAI's official service or any local/third-party service compatible with the OpenAI interface according to your needs.
-3. If you really don't know how to obtain it, you can refer to Section [1.2 API 设置](https://datawhalechina.github.io/handy-multi-agent/#/./chapter1/1-Basic-Configuration?id=_12-api-settings) in another Datawhale tutorial.
+3. If you really don't know how to obtain it, you can refer to [Environment Configuration](https://github.com/datawhalechina/hello-agents/blob/main/Extra-Chapter/Extra07-环境配置.md).
 
 ```bash
 # .env file
@@ -434,16 +434,20 @@ The LLM returns plain text, and we need to precisely extract `Thought` and `Acti
 ```python
 # (These methods are part of the ReActAgent class)
     def _parse_output(self, text: str):
-        """Parse LLM output to extract Thought and Action."""
-        thought_match = re.search(r"Thought: (.*)", text)
-        action_match = re.search(r"Action: (.*)", text)
+        """Parse LLM output to extract Thought and Action.
+        """
+        # Thought: match until Action: or end of text
+        thought_match = re.search(r"Thought:\s*(.*?)(?=\nAction:|$)", text, re.DOTALL)
+        # Action: match until end of text
+        action_match = re.search(r"Action:\s*(.*?)$", text, re.DOTALL)
         thought = thought_match.group(1).strip() if thought_match else None
         action = action_match.group(1).strip() if action_match else None
         return thought, action
 
     def _parse_action(self, action_text: str):
-        """Parse Action string to extract tool name and input."""
-        match = re.match(r"(\w+)\[(.*)\]", action_text)
+        """Parse Action string to extract tool name and input.
+        """
+        match = re.match(r"(\w+)\[(.*)\]", action_text, re.DOTALL)
         if match:
             return match.group(1), match.group(2)
         return None, None
