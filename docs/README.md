@@ -31,7 +31,7 @@
 
 **[🌐 点击这里开始在线阅读](https://datawhalechina.github.io/hello-agents/)**
 
-**[📖 Cookbook(测试版)](https://book.heterocat.com.cn/)**
+**[📖 Cookbook](https://book.heterocat.com.cn/)**
 
 ### ✨ 你将收获什么？
 
@@ -160,6 +160,13 @@
 
 <div align="center">
   <p>⭐ 如果这个项目对你有帮助，请给我们一个 Star！</p>
+</div>
+
+## 读者交流群
+
+<div align='center'>
+    <img src="./读者群二维码.png" alt="读者群二维码" width="30%">
+    <p>扫描二维码加入读者交流群，与更多学习者交流讨论</p>
 </div>
 
 ## 关于 Datawhale
