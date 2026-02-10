@@ -11,14 +11,18 @@
 """
 
 import os
+
+os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+from dotenv import load_dotenv
+
+load_dotenv()
 import time
 import json
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Tuple
 from hello_agents.tools import MemoryTool, RAGTool
 import gradio as gr
-from dotenv import load_dotenv
-load_dotenv()
+
 
 class PDFLearningAssistant:
     """智能文档问答助手"""
@@ -41,7 +45,7 @@ class PDFLearningAssistant:
             "session_start": datetime.now(),
             "documents_loaded": 0,
             "questions_asked": 0,
-            "concepts_learned": 0
+            "concepts_learned": 0,
         }
 
         # 当前加载的文档
@@ -63,12 +67,14 @@ class PDFLearningAssistant:
 
         try:
             # 使用RAG工具处理PDF
-            result = self.rag_tool.run({
-                "action":"add_document",
-                "file_path":pdf_path,
-                "chunk_size":1000,
-                "chunk_overlap":200
-            })
+            result = self.rag_tool.run(
+                {
+                    "action": "add_document",
+                    "file_path": pdf_path,
+                    "chunk_size": 1000,
+                    "chunk_overlap": 200,
+                }
+            )
 
             process_time = time.time() - start_time
 
@@ -77,25 +83,24 @@ class PDFLearningAssistant:
             self.stats["documents_loaded"] += 1
 
             # 记录到学习记忆
-            self.memory_tool.run({
-                "action":"add",
-                "content":f"加载了文档《{self.current_document}》",
-                "memory_type":"episodic",
-                "importance":0.9,
-                "event_type":"document_loaded",
-                "session_id":self.session_id
-            })
+            self.memory_tool.run(
+                {
+                    "action": "add",
+                    "content": f"加载了文档《{self.current_document}》",
+                    "memory_type": "episodic",
+                    "importance": 0.9,
+                    "event_type": "document_loaded",
+                    "session_id": self.session_id,
+                }
+            )
 
             return {
                 "success": True,
                 "message": f"加载成功！(耗时: {process_time:.1f}秒)",
-                "document": self.current_document
+                "document": self.current_document,
             }
         except Exception as e:
-            return {
-                "success": False,
-                "message": f"加载失败: {str(e)}"
-            }
+            return {"success": False, "message": f"加载失败: {str(e)}"}
 
     def ask(self, question: str, use_advanced_search: bool = True) -> str:
         """向文档提问
@@ -111,33 +116,39 @@ class PDFLearningAssistant:
             return "⚠️ 请先加载文档！使用 load_document() 方法加载PDF文档。"
 
         # 记录问题到工作记忆
-        self.memory_tool.run({
-            "action":"add",
-            "content":f"提问: {question}",
-            "memory_type":"working",
-            "importance":0.6,
-            "session_id":self.session_id
-        })
+        self.memory_tool.run(
+            {
+                "action": "add",
+                "content": f"提问: {question}",
+                "memory_type": "working",
+                "importance": 0.6,
+                "session_id": self.session_id,
+            }
+        )
 
         # 使用RAG检索答案
-        answer = self.rag_tool.run({
-            "action":"ask",
-            "question":question,
-            "limit":5,
-            "enable_advanced_search":use_advanced_search,
-            "enable_mqe":use_advanced_search,
-            "enable_hyde":use_advanced_search
-        })
+        answer = self.rag_tool.run(
+            {
+                "action": "ask",
+                "question": question,
+                "limit": 5,
+                "enable_advanced_search": use_advanced_search,
+                "enable_mqe": use_advanced_search,
+                "enable_hyde": use_advanced_search,
+            }
+        )
 
         # 记录到情景记忆
-        self.memory_tool.run({
-            "action":"add",
-            "content":f"关于'{question}'的学习",
-            "memory_type":"episodic",
-            "importance":0.7,
-            "event_type":"qa_interaction",
-            "session_id":self.session_id
-        })
+        self.memory_tool.run(
+            {
+                "action": "add",
+                "content": f"关于'{question}'的学习",
+                "memory_type": "episodic",
+                "importance": 0.7,
+                "event_type": "qa_interaction",
+                "session_id": self.session_id,
+            }
+        )
 
         self.stats["questions_asked"] += 1
 
@@ -150,14 +161,16 @@ class PDFLearningAssistant:
             content: 笔记内容
             concept: 相关概念（可选）
         """
-        self.memory_tool.run({
-            "action":"add",
-            "content":content,
-            "memory_type":"semantic",
-            "importance":0.8,
-            "concept":concept or "general",
-            "session_id":self.session_id
-        })
+        self.memory_tool.run(
+            {
+                "action": "add",
+                "content": content,
+                "memory_type": "semantic",
+                "importance": 0.8,
+                "concept": concept or "general",
+                "session_id": self.session_id,
+            }
+        )
 
         self.stats["concepts_learned"] += 1
 
@@ -171,11 +184,9 @@ class PDFLearningAssistant:
         Returns:
             str: 相关记忆
         """
-        result = self.memory_tool.run({
-            "action":"search",
-            "query":query,
-            "limit":limit
-        })
+        result = self.memory_tool.run(
+            {"action": "search", "query": query, "limit": limit}
+        )
         return result
 
     def get_stats(self) -> Dict[str, Any]:
@@ -191,7 +202,7 @@ class PDFLearningAssistant:
             "加载文档": self.stats["documents_loaded"],
             "提问次数": self.stats["questions_asked"],
             "学习笔记": self.stats["concepts_learned"],
-            "当前文档": self.current_document or "未加载"
+            "当前文档": self.current_document or "未加载",
         }
 
     def generate_report(self, save_to_file: bool = True) -> Dict[str, Any]:
@@ -204,10 +215,10 @@ class PDFLearningAssistant:
             Dict: 学习报告
         """
         # 获取记忆摘要
-        memory_summary = self.memory_tool.run({"action":"summary", "limit":10})
+        memory_summary = self.memory_tool.run({"action": "summary", "limit": 10})
 
         # 获取RAG统计
-        rag_stats = self.rag_tool.run({"action":"stats"})
+        rag_stats = self.rag_tool.run({"action": "stats"})
 
         # 生成报告
         duration = (datetime.now() - self.stats["session_start"]).total_seconds()
@@ -216,31 +227,28 @@ class PDFLearningAssistant:
                 "session_id": self.session_id,
                 "user_id": self.user_id,
                 "start_time": self.stats["session_start"].isoformat(),
-                "duration_seconds": duration
+                "duration_seconds": duration,
             },
             "learning_metrics": {
                 "documents_loaded": self.stats["documents_loaded"],
                 "questions_asked": self.stats["questions_asked"],
-                "concepts_learned": self.stats["concepts_learned"]
+                "concepts_learned": self.stats["concepts_learned"],
             },
             "memory_summary": memory_summary,
-            "rag_status": rag_stats
+            "rag_status": rag_stats,
         }
 
         # 保存到文件
         if save_to_file:
             report_file = f"learning_report_{self.session_id}.json"
             try:
-                with open(report_file, 'w', encoding='utf-8') as f:
+                with open(report_file, "w", encoding="utf-8") as f:
                     json.dump(report, f, ensure_ascii=False, indent=2, default=str)
                 report["report_file"] = report_file
             except Exception as e:
                 report["save_error"] = str(e)
 
         return report
-
-
-
 
 
 def create_gradio_ui():
@@ -281,7 +289,9 @@ def create_gradio_ui():
             return "", history
 
         # 判断是技术问题还是回顾问题
-        if any(keyword in message for keyword in ["之前", "学过", "回顾", "历史", "记得"]):
+        if any(
+            keyword in message for keyword in ["之前", "学过", "回顾", "历史", "记得"]
+        ):
             # 回顾学习历程
             response = assistant_state["assistant"].recall(message)
             response = f"🧠 **学习回顾**\n\n{response}"
@@ -336,7 +346,8 @@ def create_gradio_ui():
 
     # 创建Gradio界面
     with gr.Blocks(title="智能文档问答助手", theme=gr.themes.Soft()) as demo:
-        gr.Markdown("""
+        gr.Markdown(
+            """
         # 📚 智能文档问答助手
 
         基于HelloAgents的智能文档问答系统，支持：
@@ -345,25 +356,26 @@ def create_gradio_ui():
         - 📝 学习笔记记录
         - 🧠 学习历程回顾
         - 📊 学习报告生成
-        """)
+        """
+        )
 
         with gr.Tab("🏠 开始使用"):
             with gr.Row():
                 user_id_input = gr.Textbox(
                     label="用户ID",
                     placeholder="输入你的用户ID（可选，默认为web_user）",
-                    value="web_user"
+                    value="web_user",
                 )
                 init_btn = gr.Button("初始化助手", variant="primary")
 
             init_output = gr.Textbox(label="初始化状态", interactive=False)
-            init_btn.click(init_assistant, inputs=[user_id_input], outputs=[init_output])
+            init_btn.click(
+                init_assistant, inputs=[user_id_input], outputs=[init_output]
+            )
 
             gr.Markdown("### 📄 加载PDF文档")
             pdf_upload = gr.File(
-                label="上传PDF文件",
-                file_types=[".pdf"],
-                type="filepath"
+                label="上传PDF文件", file_types=[".pdf"], type="filepath"
             )
             load_btn = gr.Button("加载文档", variant="primary")
             load_output = gr.Textbox(label="加载状态", interactive=False)
@@ -371,16 +383,12 @@ def create_gradio_ui():
 
         with gr.Tab("💬 智能问答"):
             gr.Markdown("### 向文档提问或回顾学习历程")
-            chatbot = gr.Chatbot(
-                label="对话历史",
-                height=400,
-                bubble_full_width=False
-            )
+            chatbot = gr.Chatbot(label="对话历史", height=400, bubble_full_width=False)
             with gr.Row():
                 msg_input = gr.Textbox(
                     label="输入问题",
                     placeholder="例如：什么是Transformer？ 或 我之前学过什么？",
-                    scale=4
+                    scale=4,
                 )
                 send_btn = gr.Button("发送", variant="primary", scale=1)
 
@@ -390,28 +398,31 @@ def create_gradio_ui():
                     "Transformer架构有哪些核心组件？",
                     "如何训练大语言模型？",
                     "我之前学过什么内容？",
-                    "回顾一下关于注意力机制的学习"
+                    "回顾一下关于注意力机制的学习",
                 ],
-                inputs=msg_input
+                inputs=msg_input,
             )
 
-            msg_input.submit(chat, inputs=[msg_input, chatbot], outputs=[msg_input, chatbot])
-            send_btn.click(chat, inputs=[msg_input, chatbot], outputs=[msg_input, chatbot])
+            msg_input.submit(
+                chat, inputs=[msg_input, chatbot], outputs=[msg_input, chatbot]
+            )
+            send_btn.click(
+                chat, inputs=[msg_input, chatbot], outputs=[msg_input, chatbot]
+            )
 
         with gr.Tab("📝 学习笔记"):
             gr.Markdown("### 记录学习心得和重要概念")
             note_content = gr.Textbox(
-                label="笔记内容",
-                placeholder="输入你的学习笔记...",
-                lines=3
+                label="笔记内容", placeholder="输入你的学习笔记...", lines=3
             )
             concept_input = gr.Textbox(
-                label="相关概念（可选）",
-                placeholder="例如：transformer, attention"
+                label="相关概念（可选）", placeholder="例如：transformer, attention"
             )
             note_btn = gr.Button("保存笔记", variant="primary")
             note_output = gr.Textbox(label="保存状态", interactive=False)
-            note_btn.click(add_note_ui, inputs=[note_content, concept_input], outputs=[note_output])
+            note_btn.click(
+                add_note_ui, inputs=[note_content, concept_input], outputs=[note_output]
+            )
 
         with gr.Tab("📊 学习统计"):
             gr.Markdown("### 查看学习进度和统计信息")
@@ -429,20 +440,14 @@ def create_gradio_ui():
 
 def main():
     """主函数 - 启动Gradio Web UI"""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("智能文档问答助手")
-    print("="*60)
+    print("=" * 60)
     print("正在启动Web界面...\n")
 
     demo = create_gradio_ui()
-    demo.launch(
-        server_name="0.0.0.0",
-        server_port=7860,
-        share=False,
-        show_error=True
-    )
+    demo.launch(server_name="0.0.0.0", server_port=7860, share=False, show_error=True)
 
 
 if __name__ == "__main__":
     main()
-

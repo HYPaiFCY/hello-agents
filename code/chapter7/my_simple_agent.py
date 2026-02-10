@@ -1,6 +1,7 @@
 # my_simple_agent.py
 from typing import Optional, Iterator
 from hello_agents import SimpleAgent, HelloAgentsLLM, Config, Message
+from hello_agents import ToolRegistry
 import re
 
 class MySimpleAgent(SimpleAgent):
@@ -214,7 +215,7 @@ class MySimpleAgent(SimpleAgent):
         print("📝 实时响应: ", end="")
         for chunk in self.llm.stream_invoke(messages, **kwargs):
             full_response += chunk
-            print(chunk, end="", flush=True)
+            # print(chunk, end="", flush=True)
             yield chunk
 
         print()  # 换行

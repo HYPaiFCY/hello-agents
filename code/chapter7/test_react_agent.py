@@ -85,6 +85,12 @@ def test_react_agent():
     for tool_name in tool_registry._tools.keys():
         print(f"  - {tool_name}")
     
+    # 显示对话历史内容
+    print("\n📜 对话历史内容:")
+    history_messages = agent.get_history()
+    for msg in history_messages:
+        print(msg)
+        
     print("\n🎉 测试完成！")
 
 def test_custom_prompt():
@@ -136,6 +142,12 @@ Action: [tool_name[input] 或 Finish[答案]]
         print(f"\n🎯 自定义提示词测试结果: {result}")
     except Exception as e:
         print(f"❌ 自定义提示词测试失败: {e}")
+        
+    # 显示对话历史内容
+    print("\n📜 对话历史内容:")
+    history_messages = custom_agent.get_history()
+    for msg in history_messages:
+        print(msg)
 
 if __name__ == "__main__":
     # 运行基础测试

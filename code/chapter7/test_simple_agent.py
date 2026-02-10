@@ -42,7 +42,8 @@ print(f"工具增强响应: {response2}\n")
 print("=== 测试3：流式响应 ===")
 print("流式响应: ", end="")
 for chunk in basic_agent.stream_run("请解释什么是人工智能"):
-    pass  # 内容已在stream_run中实时打印
+    # pass  # 内容已在stream_run中实时打印
+    print(chunk, end="", flush=True)
 
 # 测试4：动态添加工具
 print("\n=== 测试4：动态工具管理 ===")
@@ -53,3 +54,5 @@ print(f"可用工具: {basic_agent.list_tools()}")
 
 # 查看对话历史
 print(f"\n对话历史: {len(basic_agent.get_history())} 条消息")
+for msg in basic_agent.get_history():
+    print(f"- [{msg.role}] {msg.content}")
